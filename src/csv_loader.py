@@ -16,10 +16,30 @@ def csv_loader():
             else:
                 cost_per_head = None
 
+            cuisines = []
+
             if row["all_cuisines"]:
-                cuisines = row["all_cuisines"].split(", ")
-            else:
-                cuisines = []
+                all_cuisines = row["all_cuisines"].split(",")
+                for cuisine in all_cuisines:
+                    cleaned_cuisine = cuisine.strip()
+
+                    if cleaned_cuisine:
+                        cuisines.append(cleaned_cuisine)
+
+            must_try_dishes = []
+            
+            raw_value = row["what_to_eat"]
+
+            curator_recommendations = raw_value.split("|")
+
+            for recommendation in curator_recommendations:
+                dishes = recommendation.split(",")
+
+                for dish in dishes:
+                    cleaned_dish = dish.strip()
+
+                    if cleaned_dish:
+                        must_try_dishes.append(cleaned_dish)
             
             restaurant = Restaurant(
                 row["restaurant_name"],
@@ -27,7 +47,7 @@ def csv_loader():
                 row["location"],
                 cuisines,
                 cost_per_head,
-                row["what_to_eat"],
+                must_try_dishes,
                 row["has_vegetarian_option"] == "t",
             )
 
