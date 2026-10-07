@@ -15,12 +15,17 @@ def csv_loader():
                 cost_per_head = int(row["avg_cost_per_head"])
             else:
                 cost_per_head = None
+
+            if row["all_cuisines"]:
+                cuisines = row["all_cuisines"].split(", ")
+            else:
+                cuisines = []
             
             restaurant = Restaurant(
                 row["restaurant_name"],
                 row["city"],
                 row["location"],
-                row["all_cuisines"],
+                cuisines,
                 cost_per_head,
                 row["what_to_eat"],
                 row["has_vegetarian_option"] == "t",

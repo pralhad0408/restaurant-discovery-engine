@@ -4,7 +4,7 @@ class Restaurant:
             name,
             city,
             location,
-            cuisine,
+            cuisines,
             cost_per_head,
             must_try_dishes,
             has_veg_option,
@@ -13,7 +13,7 @@ class Restaurant:
             self.name = name
             self.city = city
             self.location = location
-            self.cuisine = cuisine
+            self.cuisines = cuisines
             self.cost_per_head = cost_per_head
             self.must_try_dishes = must_try_dishes
             self.has_veg_option = has_veg_option
