@@ -19,11 +19,28 @@ def get_menu_choice():
         print("Invalid option. Please choose a number between 1 and 4.")
 
 def discover_restaurants(restaurants):
-    cuisine = input("What cuisine are you craving? ")
+    while True:
+        cuisine = input("What cuisine are you craving? ")
+        matches = filter_by_cuisines(restaurants, cuisine)
 
-    matches = filter_by_cuisines(restaurants, cuisine)
+        if not matches:
+            print("No matches found. Would you like to try another cuisine?")
+            print("1. Try again")
+            print("2. Back to main menu")
 
-    print(f"Found {len(matches)} matching restaurants")
+            while True:
+                retry_cuisine = input("Choose an option: ").strip()
+
+                if retry_cuisine == "1":
+                    break
+                elif retry_cuisine == "2":
+                    return
+                else:
+                    print("Invalid input. Choose either 1 or 2.")
+
+        else:
+            print(f"Found {len(matches)} matching restaurants")
+            return
 
 def main():
     restaurants = csv_loader()

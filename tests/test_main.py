@@ -60,12 +60,61 @@ def test_discover_restaurants_by_cuisine(monkeypatch, capsys, sample_restaurants
     assert expected_messages in captured.out
 
 def test_discover_restaurants_by_cuisine_no_matches(monkeypatch, capsys, sample_restaurants):
-    expected_message = "Found 0 matching restaurants"
+    expected_message = "No matches found. Would you like to try another cuisine?"
 
-    monkeypatch.setattr("builtins.input", lambda prompt: "Mexican")
+    responses = iter(["Mexican", "2"])
+
+    monkeypatch.setattr("builtins.input", lambda prompt: next(responses))
 
     discover_restaurants(sample_restaurants)
 
     captured = capsys.readouterr()
 
     assert expected_message in captured.out
+
+def test_discover_restaurants_by_cuisine_retry_loop(monkeypatch, capsys, sample_restaurants):
+    responses = iter(["Mexican", "1", "Italian"])
+    
+    expected_messages = [
+        "No matches found. Would you like to try another cuisine?",
+        "Found 2 matching restaurants",
+    ]
+
+    monkeypatch.setattr("builtins.input", lambda prompt: next(responses))
+
+    discover_restaurants(sample_restaurants)
+
+    captured = capsys.readouterr()
+
+    for message in expected_messages:
+        assert message in captured.out
+
+def test_discover_restaurants_invalid_retry_choice(monkeypatch, capsys, sample_restaurants):
+    responses = iter(["Mexican", "7", "1", "Italian"])
+    prompts = []
+
+    def mock_input(prompt):
+        prompts.append(prompt)
+        return next(responses)
+
+    monkeypatch.setattr("builtins.input", mock_input)
+
+    expected_messages = [
+        "No matches found. Would you like to try another cuisine?",
+        "Invalid input. Choose either 1 or 2.",
+        "Found 2 matching restaurants",
+    ]
+
+    discover_restaurants(sample_restaurants)
+
+    captured = capsys.readouterr()
+
+    for message in expected_messages:
+        assert message in captured.out
+
+    assert prompts == [
+        "What cuisine are you craving? ",
+        "Choose an option: ",
+        "Choose an option: ",
+        "What cuisine are you craving? ",
+    ]
