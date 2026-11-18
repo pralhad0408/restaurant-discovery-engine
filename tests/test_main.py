@@ -1,4 +1,4 @@
-from main import get_menu_choice, main, discover_restaurants
+from main import get_menu_choice, main, discover_restaurants, display_restaurants
 from restaurant import Restaurant
 
 def test_get_menu_choice_valid(monkeypatch):
@@ -49,48 +49,50 @@ def test_main_multiple_selections(monkeypatch, capsys):
 
 def test_discover_restaurants_by_cuisine(monkeypatch, capsys, sample_restaurants):
 
-    expected_messages = "Found 2 matching restaurants"
+    responses = iter(["1", "Italian", "4", "5"])
 
-    monkeypatch.setattr("builtins.input", lambda prompt: "Italian")
+    monkeypatch.setattr("builtins.input", lambda prompt: next(responses))
 
     discover_restaurants(sample_restaurants)
 
-    captured = capsys.readouterr()
+    captured = capsys.readouterr().out
 
-    assert expected_messages in captured.out
+    assert "2 matching restaurants." in captured
+    assert "1. Mario's" in captured
+    assert "2. Luigi's" in captured
+    assert "Sakura" not in captured
 
 def test_discover_restaurants_by_cuisine_no_matches(monkeypatch, capsys, sample_restaurants):
-    expected_message = "No matches found. Would you like to try another cuisine?"
 
-    responses = iter(["Mexican", "2"])
-
-    monkeypatch.setattr("builtins.input", lambda prompt: next(responses))
-
-    discover_restaurants(sample_restaurants)
-
-    captured = capsys.readouterr()
-
-    assert expected_message in captured.out
-
-def test_discover_restaurants_by_cuisine_retry_loop(monkeypatch, capsys, sample_restaurants):
-    responses = iter(["Mexican", "1", "Italian"])
-    
-    expected_messages = [
-        "No matches found. Would you like to try another cuisine?",
-        "Found 2 matching restaurants",
-    ]
+    responses = iter(["1", "Mexican", "4", "5"])
 
     monkeypatch.setattr("builtins.input", lambda prompt: next(responses))
 
     discover_restaurants(sample_restaurants)
 
-    captured = capsys.readouterr()
+    captured = capsys.readouterr().out
 
-    for message in expected_messages:
-        assert message in captured.out
+    assert "Cuisine: Mexican" in captured
+    assert "0 matching restaurants." in captured
+    assert "No matching restaurants found. Try changing your filters." in captured
 
-def test_discover_restaurants_invalid_retry_choice(monkeypatch, capsys, sample_restaurants):
-    responses = iter(["Mexican", "7", "1", "Italian"])
+def test_discover_restaurants_change_cuisine(monkeypatch, capsys, sample_restaurants):
+    responses = iter(["1", "Mexican", "1", "Italian", "4", "5"])
+
+    monkeypatch.setattr("builtins.input", lambda prompt: next(responses))
+
+    discover_restaurants(sample_restaurants)
+
+    captured = capsys.readouterr().out
+
+    assert "0 matching restaurants." in captured
+    assert "Cuisine: Italian" in captured
+    assert "2 matching restaurants." in captured
+    assert "1. Mario's" in captured
+    assert "2. Luigi's" in captured
+
+def test_discover_restaurants_invalid_menu_choice(monkeypatch, capsys, sample_restaurants):
+    responses = iter(["7", "1", "Italian", "4", "5"])
     prompts = []
 
     def mock_input(prompt):
@@ -99,22 +101,54 @@ def test_discover_restaurants_invalid_retry_choice(monkeypatch, capsys, sample_r
 
     monkeypatch.setattr("builtins.input", mock_input)
 
-    expected_messages = [
-        "No matches found. Would you like to try another cuisine?",
-        "Invalid input. Choose either 1 or 2.",
-        "Found 2 matching restaurants",
-    ]
-
     discover_restaurants(sample_restaurants)
 
-    captured = capsys.readouterr()
+    captured = capsys.readouterr().out
 
-    for message in expected_messages:
-        assert message in captured.out
+    assert "Invalid option. Please choose a number between 1 and 5." in captured
+    assert "2 matching restaurants." in captured
+    assert "1. Mario's" in captured
+    assert "2. Luigi's" in captured
 
     assert prompts == [
-        "What cuisine are you craving? ",
         "Choose an option: ",
         "Choose an option: ",
-        "What cuisine are you craving? ",
+        "Enter cuisine (0 to clear): ",
+        "Choose an option: ",
+        "Choose an option: ",
     ]
+
+def test_display_restaurants(capsys, sample_restaurants):
+    display_restaurants(sample_restaurants)
+
+    captured = capsys.readouterr().out
+
+    assert "1. Mario's" in captured
+    assert "2. Sakura" in captured
+    assert "3. Luigi's" in captured
+    assert "Cuisines: Italian, Continental" in captured
+    assert "Cost per head: ₹800" in captured
+
+def test_display_restaurants_empty(capsys):
+    display_restaurants([])
+
+    captured = capsys.readouterr().out
+
+    assert "No matching restaurants found. Try changing your filters." in captured
+
+def test_display_restaurants_unknown_cost(capsys):
+    sample = Restaurant(
+        name="Test_rest", 
+        city="Mumbai",
+        location="Andheri",
+        cuisines=["Italian", "Continental"],
+        cost_per_head=None,
+        must_try_dishes=["Pizza"],
+        has_veg_option=True,
+    )
+
+    display_restaurants([sample])
+
+    captured = capsys.readouterr().out
+
+    assert "Cost per head: Not available" in captured
