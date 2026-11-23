@@ -3,8 +3,8 @@ from discovery import apply_filters
 
 def display_menu():
     print("\n1. Discover restaurants")
-    print("2. Help me decide")
-    print("3. Surprise me")
+    print("2. Help me decide (Coming soon)")
+    print("3. Surprise me (Coming soon)")
     print("4. Exit")
 
 def get_menu_choice():
