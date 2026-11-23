@@ -27,3 +27,17 @@ def filter_by_vegetarian_option(restaurants):
             matches.append(restaurant)
 
     return matches
+
+def apply_filters(restaurants, selected_cuisine, selected_budget, vegetarian_only):
+    matches = restaurants.copy()
+
+    if selected_cuisine is not None:
+        matches = filter_by_cuisines(matches, selected_cuisine)
+
+    if selected_budget is not None:
+        matches = filter_by_cost(matches, selected_budget)
+
+    if vegetarian_only:
+        matches = filter_by_vegetarian_option(matches)
+
+    return matches

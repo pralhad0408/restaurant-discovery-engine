@@ -1,5 +1,5 @@
 from csv_loader import csv_loader
-from discovery import filter_by_cuisines, filter_by_cost, filter_by_vegetarian_option
+from discovery import apply_filters
 
 def display_menu():
     print("\n1. Discover restaurants")
@@ -42,16 +42,7 @@ def discover_restaurants(restaurants):
     vegetarian_only = False
 
     while True:
-        matches = restaurants.copy()
-
-        if selected_cuisine is not None:
-            matches = filter_by_cuisines(matches, selected_cuisine)
-
-        if selected_budget is not None:
-            matches = filter_by_cost(matches, selected_budget)
-
-        if vegetarian_only:
-            matches = filter_by_vegetarian_option(matches)
+        matches = apply_filters(restaurants, selected_cuisine, selected_budget, vegetarian_only)
         
         display_discovery_menu(selected_cuisine, selected_budget, vegetarian_only, len(matches))
 
